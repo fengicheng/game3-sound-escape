@@ -21,8 +21,8 @@ const G = {
     // 声音
     soundLevel: 0,          // 0~100
     soundDecay: 12,         // 每秒衰减
-    noticeThreshold: 100,    // 守卫醒来阈值
-    dangerThreshold: 200,   // 直接失败阈值
+    noticeThreshold: 250,    // 守卫醒来阈值
+    dangerThreshold: 500,   // 直接失败阈值
 
     // 屏息
     breath: 100,            // 0~100
