@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>夜盗</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- UI区 上方1/5 -->
+        <div id="ui-bar">
+            <div class="ui-item">
+                <span class="ui-label">天亮倒计时</span>
+                <div class="ui-timer" id="timer">03:00</div>
+            </div>
+            <div class="ui-item">
+                <span class="ui-label">声音</span>
+                <div class="sound-bar-container">
+                    <div class="sound-bar" id="sound-bar"></div>
+                    <div class="sound-threshold" id="threshold-notice" style="left:50%"></div>
+                    <div class="sound-threshold danger" id="threshold-danger" style="left:85%"></div>
+                </div>
+            </div>
+            <div class="ui-item">
+                <span class="ui-label">屏息</span>
+                <div class="breath-bar-container">
+                    <div class="breath-bar" id="breath-bar"></div>
+                </div>
+            </div>
+            <div class="ui-item">
+                <span class="ui-label">已装价值</span>
+                <div class="ui-value" id="total-value">0 金</div>
+            </div>
+            <div class="ui-item" id="guard-status-display">
+                <span class="ui-label">守卫</span>
+                <div class="ui-value" id="guard-status">睡眠中</div>
+            </div>
+        </div>
+
+        <!-- 游戏场景 下方4/5 -->
+        <canvas id="game-canvas"></canvas>
+
+        <!-- 开锁小游戏覆盖层 -->
+        <div id="lock-overlay" class="overlay hidden">
+            <div id="lock-game">
+                <h3>转动锁芯 — 找到正确角度</h3>
+                <canvas id="lock-canvas" width="220" height="220"></canvas>
+                <p id="lock-hint">缓慢转动，感受阻力</p>
+            </div>
+        </div>
+
+        <!-- 游戏结果覆盖层 -->
+        <div id="result-overlay" class="overlay hidden">
+            <div id="result-panel">
+                <h2 id="result-title"></h2>
+                <p id="result-reason"></p>
+                <p id="result-score"></p>
+                <div id="result-stars"></div>
+                <button id="restart-btn">再来一次</button>
+            </div>
+        </div>
+
+        <!-- 开始界面 -->
+        <div id="start-overlay" class="overlay">
+            <div id="start-panel">
+                <h1>夜 盗</h1>
+                <p class="subtitle">潜入城墙内仓库，偷取物品装上板车，天亮前逃离！</p>
+                <div class="instructions">
+                    <p>点击大门开锁</p>
+                    <p>拖拽板车移动（注意声音！）</p>
+                    <p>点击物品装上板车</p>
+                    <p>按住右键屏息（减少声音）</p>
+                    <p>天亮前把板车拖回大门</p>
+                </div>
+                <button id="start-btn">开始游戏</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
