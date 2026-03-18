@@ -252,7 +252,7 @@ function updateCart(dt) {
     // 移动时产生声音
     const speed = Math.abs(cart.vx);
     if (speed > 5) {
-        const baseSound = 2 + cart.mass * 1.5;
+        const baseSound = 0.8 + cart.mass * 0.6;
         const speedFactor = speed / 100;
         addSound(baseSound * speedFactor * dt * 60);
     }
