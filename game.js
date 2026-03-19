@@ -18,8 +18,8 @@ const G = {
     wallY: 0,               // 城墙顶部Y
 
     // 时间
-    totalTime: 180,         // 3分钟
-    timeLeft: 180,
+    totalTime: 190,         // 3分10秒
+    timeLeft: 190,
     running: false,
 
     // 声音
@@ -280,9 +280,9 @@ function updateCart(dt) {
     // 移动时产生声音
     const speed = Math.abs(cart.vx);
     if (speed > 5) {
-        const holdNoiseMult = 1 + G.moveHoldTime * 0.35;
-        const baseSound = 0.35 + cart.mass * 0.28;
-        const speedFactor = speed / 140;
+        const holdNoiseMult = 1 + G.moveHoldTime * 0.2;
+        const baseSound = 0.22 + cart.mass * 0.2;
+        const speedFactor = speed / 190;
         addSound(baseSound * speedFactor * holdNoiseMult * dt * 60);
     }
 
