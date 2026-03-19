@@ -4,6 +4,10 @@
 
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
+const bgm = new Audio('Cypher.mp3');
+bgm.loop = true;
+bgm.volume = 0.35;
+bgm.preload = 'auto';
 
 // ---- 全局状态 ----
 const G = {
@@ -188,6 +192,7 @@ function startGame() {
     G.running = true;
     G.timeLeft = G.totalTime;
     lastTime = performance.now();
+    playBgm();
 }
 
 // ============================================================
@@ -351,6 +356,7 @@ function triggerSuccess() {
     if (G.phase !== 'play') return;
     G.phase = 'success';
     G.running = false;
+    stopBgm();
     resultAnim = { phase: 0, timer: 0, type: 'success' };
     setTimeout(showSuccessResult, 1500);
 }
@@ -359,8 +365,23 @@ function triggerFail(reason) {
     if (G.phase !== 'play') return;
     G.phase = 'fail';
     G.running = false;
+    stopBgm();
     resultAnim = { phase: 0, timer: 0, type: 'fail', reason };
     setTimeout(() => showFailResult(reason), 2000);
+}
+
+function playBgm() {
+    const p = bgm.play();
+    if (p && typeof p.catch === 'function') {
+        p.catch(() => {
+            // 某些浏览器会拦截自动播放；用户再次交互后可重试
+        });
+    }
+}
+
+function stopBgm() {
+    bgm.pause();
+    bgm.currentTime = 0;
 }
 
 function showSuccessResult() {
