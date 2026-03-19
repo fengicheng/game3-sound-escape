@@ -19,7 +19,7 @@ const G = {
     running: false,
 
     // 声音
-    soundLevel: 0,          // 0~100
+    soundLevel: 0,          // 0~dangerThreshold
     soundDecay: 12,         // 每秒衰减
     noticeThreshold: 250,    // 守卫醒来阈值
     dangerThreshold: 500,   // 直接失败阈值
@@ -226,7 +226,8 @@ function addSound(amount) {
     const zone = getZoneAt(cart.x + cart.width / 2);
     const zoneMult = zone ? zone.soundMult : 1;
     const breathMult = G.isHoldingBreath ? 0.5 : 1;
-    G.soundLevel = Math.min(110, G.soundLevel + amount * zoneMult * breathMult);
+    // 和失败阈值使用同一坐标系，避免UI与判定不一致
+    G.soundLevel = Math.min(G.dangerThreshold, G.soundLevel + amount * zoneMult * breathMult);
 }
 
 function updateBreath(dt) {
@@ -1081,9 +1082,17 @@ function updateUI() {
         timerEl.style.textShadow = '0 0 10px rgba(232,213,163,0.5)';
     }
 
-    // 声音条
+    // 声音条（按 dangerThreshold 映射到 0~100%）
+    const soundMax = Math.max(G.dangerThreshold, 1);
     const soundBar = document.getElementById('sound-bar');
-    soundBar.style.width = `${Math.min(100, G.soundLevel)}%`;
+    const soundPercent = (G.soundLevel / soundMax) * 100;
+    soundBar.style.width = `${Math.min(100, soundPercent)}%`;
+
+    // 阈值线位置（与逻辑阈值保持一致）
+    const noticeEl = document.getElementById('threshold-notice');
+    const dangerEl = document.getElementById('threshold-danger');
+    noticeEl.style.left = `${Math.min(100, (G.noticeThreshold / soundMax) * 100)}%`;
+    dangerEl.style.left = `${Math.min(100, (G.dangerThreshold / soundMax) * 100)}%`;
 
     // 屏息条
     document.getElementById('breath-bar').style.width = `${G.breath}%`;
