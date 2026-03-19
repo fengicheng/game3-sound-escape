@@ -226,7 +226,8 @@ function updateTime(dt) {
 
 function updateSound(dt) {
     // 自然衰减
-    G.soundLevel = Math.max(0, G.soundLevel - G.soundDecay * dt);
+    const decayMult = G.isHoldingBreath ? 2.2 : 1;
+    G.soundLevel = Math.max(0, G.soundLevel - G.soundDecay * decayMult * dt);
 }
 
 function addSound(amount) {
@@ -274,9 +275,9 @@ function updateCart(dt) {
     // 移动时产生声音
     const speed = Math.abs(cart.vx);
     if (speed > 5) {
-        const holdNoiseMult = 1 + G.moveHoldTime * 0.8;
-        const baseSound = 0.8 + cart.mass * 0.6;
-        const speedFactor = speed / 100;
+        const holdNoiseMult = 1 + G.moveHoldTime * 0.35;
+        const baseSound = 0.35 + cart.mass * 0.28;
+        const speedFactor = speed / 140;
         addSound(baseSound * speedFactor * holdNoiseMult * dt * 60);
     }
 
