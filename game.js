@@ -38,6 +38,11 @@ const G = {
     // 拖拽
     dragging: false,
     dragOffsetX: 0,
+
+    // 键盘控制
+    moveLeft: false,
+    moveRight: false,
+    moveHoldTime: 0,        // 连续按压时长（秒）
 };
 
 // ---- 地面区域 ----
@@ -158,6 +163,9 @@ function init() {
     canvas.addEventListener('mousemove', onPointerMove);
     canvas.addEventListener('mouseup', onPointerUp);
     canvas.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('keyup', onKeyUp);
+    window.addEventListener('blur', resetMoveInput);
 
     // 右键屏息
     canvas.addEventListener('mousedown', e => { if (e.button === 2) G.isHoldingBreath = true; });
@@ -242,6 +250,19 @@ function updateBreath(dt) {
 function updateCart(dt) {
     if (!cart.visible) return;
 
+    // 键盘推车：A/D 连续按压会逐渐提速，且噪音更大
+    const moveDir = (G.moveRight ? 1 : 0) - (G.moveLeft ? 1 : 0);
+    if (moveDir !== 0) {
+        G.moveHoldTime = Math.min(3, G.moveHoldTime + dt);
+        const holdBoost = 1 + G.moveHoldTime * 0.9;
+        const pushForce = (220 / cart.mass) * holdBoost;
+        cart.vx += moveDir * pushForce * dt;
+        const maxSpeed = (260 / cart.mass) * holdBoost;
+        cart.vx = Math.max(-maxSpeed, Math.min(maxSpeed, cart.vx));
+    } else {
+        G.moveHoldTime = Math.max(0, G.moveHoldTime - dt * 2);
+    }
+
     // 惯性
     cart.x += cart.vx * dt;
     cart.vx *= Math.pow(cart.friction, dt * 10);
@@ -253,9 +274,10 @@ function updateCart(dt) {
     // 移动时产生声音
     const speed = Math.abs(cart.vx);
     if (speed > 5) {
+        const holdNoiseMult = 1 + G.moveHoldTime * 0.8;
         const baseSound = 0.8 + cart.mass * 0.6;
         const speedFactor = speed / 100;
-        addSound(baseSound * speedFactor * dt * 60);
+        addSound(baseSound * speedFactor * holdNoiseMult * dt * 60);
     }
 
     // 检查是否逃出大门
@@ -401,60 +423,72 @@ function onPointerDown(e) {
         openLockGame();
         return;
     }
-
-    // 拖拽板车
-    if (cart.visible) {
-        const cartScreenX = cart.x - G.cameraX;
-        if (sx >= cartScreenX && sx <= cartScreenX + cart.width &&
-            sy >= cart.y - 20 && sy <= cart.y + cart.height + 20) {
-            G.dragging = true;
-            G.dragOffsetX = wx - cart.x;
-            canvas.style.cursor = 'grabbing';
-            return;
-        }
-
-        // 点击物品装载
-        for (const it of items) {
-            if (it.pickedUp) continue;
-            const itScreenX = it.x - G.cameraX;
-            const itSize = it.size === 'L' ? 40 : it.size === 'M' ? 30 : 22;
-            if (sx >= itScreenX - itSize && sx <= itScreenX + itSize &&
-                sy >= it.baseY - itSize * 2 && sy <= it.baseY) {
-                // 检查板车距离
-                const dist = Math.abs(it.x - (cart.x + cart.width / 2));
-                if (dist < 200) {
-                    pickupItem(it);
-                } else {
-                    // 太远了，闪烁提示
-                    it._flash = 30;
-                }
-                return;
-            }
-        }
-    }
 }
 
 function onPointerMove(e) {
-    if (!G.dragging) return;
-    const rect = canvas.getBoundingClientRect();
-    const sx = e.clientX - rect.left;
-    const wx = screenToWorld(sx);
-
-    const targetX = wx - G.dragOffsetX;
-    const dx = targetX - cart.x;
-    // 施加力（惯性系统）
-    const forceMult = 1 / cart.mass;
-    cart.vx += dx * forceMult * 2;
-    // 限速
-    const maxSpeed = 400 / cart.mass;
-    cart.vx = Math.max(-maxSpeed, Math.min(maxSpeed, cart.vx));
+    // 推车移动改为键盘控制，此处保留用于未来扩展
 }
 
 function onPointerUp(e) {
-    if (e.button !== 0) return;
-    if (G.dragging) {
-        G.dragging = false;
-        canvas.style.cursor = 'default';
+    // 推车移动改为键盘控制，此处保留用于未来扩展
+}
+
+function onKeyDown(e) {
+    if (e.code === 'KeyA') {
+        G.moveLeft = true;
+        e.preventDefault();
+        return;
+    }
+    if (e.code === 'KeyD') {
+        G.moveRight = true;
+        e.preventDefault();
+        return;
+    }
+    if (e.code === 'KeyF') {
+        if (!e.repeat) tryPickupNearestItem();
+        e.preventDefault();
+    }
+}
+
+function onKeyUp(e) {
+    if (e.code === 'KeyA') {
+        G.moveLeft = false;
+        return;
+    }
+    if (e.code === 'KeyD') {
+        G.moveRight = false;
+    }
+}
+
+function resetMoveInput() {
+    G.moveLeft = false;
+    G.moveRight = false;
+    G.moveHoldTime = 0;
+}
+
+function tryPickupNearestItem() {
+    if (G.phase !== 'play' || !cart.visible) return;
+    if (cart.items.length >= cart.maxItems) return;
+
+    const cartCenter = cart.x + cart.width / 2;
+    let nearest = null;
+    let nearestDist = Infinity;
+
+    for (const it of items) {
+        if (it.pickedUp) continue;
+        const dist = Math.abs(it.x - cartCenter);
+        if (dist < nearestDist) {
+            nearest = it;
+            nearestDist = dist;
+        }
+    }
+
+    if (!nearest) return;
+    if (nearestDist < 200) {
+        pickupItem(nearest);
+    } else {
+        // 最近物品也太远，给出闪烁反馈
+        nearest._flash = 30;
     }
 }
 
