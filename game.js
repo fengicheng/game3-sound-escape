@@ -280,9 +280,9 @@ function updateCart(dt) {
     // 移动时产生声音
     const speed = Math.abs(cart.vx);
     if (speed > 5) {
-        const holdNoiseMult = 1 + G.moveHoldTime * 0.2;
-        const baseSound = 0.22 + cart.mass * 0.2;
-        const speedFactor = speed / 190;
+        const holdNoiseMult = 1 + G.moveHoldTime * 0.28;
+        const baseSound = 0.3 + cart.mass * 0.24;
+        const speedFactor = speed / 165;
         addSound(baseSound * speedFactor * holdNoiseMult * dt * 60);
     }
 
@@ -506,7 +506,7 @@ function tryPickupNearestItem() {
     }
 
     if (!nearest) return;
-    if (nearestDist < 200) {
+    if (nearestDist < 160) {
         pickupItem(nearest);
     } else {
         // 最近物品也太远，给出闪烁反馈
